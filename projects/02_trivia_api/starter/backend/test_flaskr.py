@@ -15,8 +15,15 @@ class TriviaTestCase(unittest.TestCase):
         self.app = create_app()
         self.client = self.app.test_client
         self.database_name = "trivia_test"
-        self.database_path = "postgres://{}/{}".format('localhost:5432', self.database_name)
+        self.database_path = "postgresql://{}:{}@{}/{}".format('postgres','123456','localhost:5432', self.database_name)
         setup_db(self.app, self.database_path)
+
+        self.new_question = {
+            'question': 'Does this work?',
+            'answer': 'I hope so!',
+            'category': 1,
+            'difficulty': 1
+        }
 
         # binds the app to the current context
         with self.app.app_context():
@@ -28,6 +35,110 @@ class TriviaTestCase(unittest.TestCase):
     def tearDown(self):
         """Executed after reach test"""
         pass
+
+    def test_get_categories(self):
+        res = self.client().get('/categories')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'],True)
+        self.assertGreater(len(data['categories']), 0)
+        self.assertGreater(data['total_categories'],0)
+
+
+    def test_get_questions(self):
+        res = self.client().get('/questions')
+        data= json.loads(res.data)
+
+        self.assertEqual(res.status_code,200)
+        self.assertEqual(data['success'], True)
+        self.assertGreater(len(data['questions']), 0)
+        self.assertGreater(data['total_questions'], 0)
+        self.assertGreater(len(data['categories']), 0)
+
+
+    def test_delete_questions(self):
+        res = self.client().delete('questions/1')
+        data = json.loads(res.data)
+        question = Question.query.filter(Question.id == 1).one_or_none()
+
+        self.assertEqual(res.status_code,200)
+        self.assertEqual(data['success'],True)
+        self.assertEqual(question, None)
+    
+
+    def test_post_questions(self):
+        res = self.client().post('/questions', json=self.new_question)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code,200)
+        self.assertEqual(data['success'], True)
+
+
+    # def test_post_search_questions(self):
+    #     res = self.client().post('/questions/search', json= 'Mona')
+    #     data = json.loads(res.data)
+
+    #     self.assertEqual(res.status_code,200)
+    #     self.assertEqual(data['success'],True)
+    #     self.assertTrue(data['questions'])
+
+    def test_get_questions_by_category_id(self):
+        res = self.client().get('/categories/1/questions')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code,200)
+        self.assertEqual(data['success'], True)
+
+    
+    # def test_post_quizzes(self):
+    #     res = self.client().post('/quizzes')
+    #     data = json.loads(res.data)
+
+    #     self.assertEqual(res.status_code,200)
+        
+        
+
+        
+
+    # def test_422_unprocessable(self):
+    #     res = self.client().delete('/questions/<int:question_id>', json={'id': 1000})
+    #     data = json.loads(res.data)
+
+    #     self.assertEqual(res.status_code,422)
+    #     self.assertEqual(data['success'], False)
+    #     self.assertEqual(data['message'],'unprocessable')
+
+
+   
+    def test_500_server_error(self):
+        res = self.client().post('/questions',
+        content_type='application/json', data = '11111')
+
+        data= json.loads(res.data)
+
+        self.assertEqual(res.status_code,500)
+        self.assertEqual(data['success'],False)
+        self.assertEqual(data['message'], 'server_error')
+   
+
+    def test_405_method_not_allowed(self):
+        res= self.client().post('/categories')
+        data= json.loads(res.data)
+
+        self.assertEqual(res.status_code,405)
+        self.assertEqual(data['success'],False)
+        self.assertEqual(data['message'],'method_not_allowed')
+
+
+    def test_404_not_found(self):
+        res = self.client().get('/categories/history')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'],'resource not found')
+
 
     """
     TODO
