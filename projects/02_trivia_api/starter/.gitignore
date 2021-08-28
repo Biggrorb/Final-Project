@@ -1,7 +1,8 @@
 .vscode
 __pycache__
 venv
-
+frontend/nodemodules
+backend/.env
 # OS generated files #
 ######################
 .DS_Store
