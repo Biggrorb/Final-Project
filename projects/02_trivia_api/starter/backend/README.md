@@ -82,12 +82,12 @@ One note before you delve into your tasks: for each endpoint, you are expected t
 This README is missing documentation of your endpoints. Below is an example for your endpoint to get all categories. Please use it as a reference for creating your documentation and resubmit your code. 
 
 Endpoints
-GET '/api/v1.0/categories'
-GET ...
-POST ...
-DELETE ...
+GET '/categories'
+GET '/questions'
+POST'/questions'
+DELETE'/questions/${id}'
 
-GET '/api/v1.0/categories'
+GET '/categories'
 - Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
 - Request Arguments: None
 - Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs. 
@@ -97,6 +97,51 @@ GET '/api/v1.0/categories'
 '4' : "History",
 '5' : "Entertainment",
 '6' : "Sports"}
+
+GET '/questions?page=${integer}'
+
+- Fetches a dictionary of questions in which the key is the ids and values are question, answer, category and diffuclty.
+-Request Arguments: Page, This represents page number for paginated results, format: Integer, if not given default page is 1.
+-Returns several objects, all category ids and their value pairs, and 10 paginated questions with their id, question string, answer string, category id and difficulty integer:
+  
+  "categories": {
+    "1": "Science", 
+    "2": "Art", 
+    "3": "Geography", 
+    "4": "History", 
+    "5": "Entertainment", 
+    "6": "Sports"
+
+    "questions": [
+{
+    "answer": "Muhammad Ali", 
+    "category": 4, 
+    "difficulty": 1, 
+    "id": 9, 
+    "question": "What boxer's original name is Cassius Clay?"
+
+POST '/questions'
+- Adds a new question to the database using the request values
+- Request Arguments: 
+'question': "String" 
+'answer':"String"
+'category':${integer}
+'difficulty':${integer}
+ #note, categories are returned as an object of id:category_string
+   "categories": {
+    "1": "Science", 
+    "2": "Art", 
+    "3": "Geography", 
+    "4": "History", 
+    "5": "Entertainment", 
+    "6": "Sports"
+- Returns New questions id on success.
+
+DELETE '/questions/${integer}
+- Deletes a question specified by the questions id from the database
+- Request Arguments: questions id: as an integer
+- Returns deleted questions id on success
+
 
 ```
 

@@ -6,6 +6,7 @@ from flask_cors import CORS
 import random
 from sqlalchemy import func
 
+
 from models import setup_db, Question, Category, db
 
 QUESTIONS_PER_PAGE = 10
@@ -240,7 +241,7 @@ def create_app(test_config=None):
         return jsonify({"question":result})
       else:
         return jsonify({})
-    except:
+    except Exception:
       abort(422)
                
 

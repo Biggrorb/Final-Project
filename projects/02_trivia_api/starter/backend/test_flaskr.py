@@ -5,7 +5,9 @@ from flask_sqlalchemy import SQLAlchemy
 
 from flaskr import create_app
 from models import setup_db, Question, Category
+from dotenv import load_dotenv
 
+load_dotenv()
 
 class TriviaTestCase(unittest.TestCase):
     """This class represents the trivia test case"""
@@ -14,8 +16,12 @@ class TriviaTestCase(unittest.TestCase):
         """Define test variables and initialize app."""
         self.app = create_app()
         self.client = self.app.test_client
-        self.database_name = "trivia_test"
-        self.database_path = "postgresql://{}:{}@{}/{}".format('postgres','123456','localhost:5432', self.database_name)
+        self.database_name = os.getenv('test_database_name')
+        self.database_path = "postgresql://{}:{}@{}/{}".format(
+            os.getenv('test_database_user'),
+            os.getenv('test_database_password'),
+            os.getenv('test_database_host'), 
+            self.database_name)
         setup_db(self.app, self.database_path)
 
         self.new_question = {
@@ -75,13 +81,13 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
 
 
-    # def test_post_search_questions(self):
-    #     res = self.client().post('/questions/search', json= 'Mona')
-    #     data = json.loads(res.data)
+    def test_post_search_questions(self):
+        res = self.client().post('/questions/search', json={'searchTerm': 'What'})
+        data = json.loads(res.data)
 
-    #     self.assertEqual(res.status_code,200)
-    #     self.assertEqual(data['success'],True)
-    #     self.assertTrue(data['questions'])
+        self.assertEqual(res.status_code,200)
+        self.assertEqual(data['success'],True)
+        self.assertGreater(len(data['questions']),0)
 
     def test_get_questions_by_category_id(self):
         res = self.client().get('/categories/1/questions')
@@ -92,23 +98,19 @@ class TriviaTestCase(unittest.TestCase):
 
     
     # def test_post_quizzes(self):
-    #     res = self.client().post('/quizzes')
+    #     res = self.client().post('/quizzes',json={'previous_questions':[],'quiz_category':[]})
     #     data = json.loads(res.data)
 
     #     self.assertEqual(res.status_code,200)
         
         
 
+    def test_422_unprocessable(self):
+        res = self.client().post('/quizzes',json={'previous_questions':[],'quiz_catergory':[]})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code,422)
         
-
-    # def test_422_unprocessable(self):
-    #     res = self.client().delete('/questions/<int:question_id>', json={'id': 1000})
-    #     data = json.loads(res.data)
-
-    #     self.assertEqual(res.status_code,422)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['message'],'unprocessable')
-
 
    
     def test_500_server_error(self):
